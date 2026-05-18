@@ -1,8 +1,8 @@
 # *-* coding: utf-8 *-*
 
-from string import uppercase
+from string import ascii_uppercase as uppercase
 from os.path import exists as file_exists
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bigglesworth.utils import load_ui, setBold
 from bigglesworth.const import sound_headers, categories, Params, BANK, NAME, PROG, CATEGORY, STORED, ValuesRole, EditedRole
@@ -16,19 +16,19 @@ class NoEditItem(QtGui.QStandardItem):
         QtGui.QStandardItem.__init__(self, *args, **kwargs)
         self.setFlags(self.flags() ^ QtCore.Qt.ItemIsEditable)
 
-class FixDelegate(QtGui.QStyledItemDelegate):
+class FixDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, parent=None):
-        QtGui.QStyledItemDelegate.__init__(self, parent)
+        QtWidgets.QStyledItemDelegate.__init__(self, parent)
         self.commitData.connect(self.set_data)
 
     def createEditor(self, parent, option, index):
         self.index = index
-        combo = QtGui.QComboBox(parent)
-        combo.addItems(['Unchanged'] + index.data(ValuesRole).toPyObject())
+        combo = QtWidgets.QComboBox(parent)
+        combo.addItems(['Unchanged'] + index.data(ValuesRole))
 #        model = QtGui.QStandardItemModel()
-#        [model.appendRow(QtGui.QStandardItem(value)) for value in index.data(ValuesRole).toPyObject()]
+#        [model.appendRow(QtGui.QStandardItem(value)) for value in index.data(ValuesRole)]
 #        combo.setModel(model)
-        combo.setCurrentIndex(index.data(EditedRole).toPyObject() + 1)
+        combo.setCurrentIndex(index.data(EditedRole) + 1)
         combo.activated.connect(lambda i: parent.setFocus())
         return combo
 
@@ -40,23 +40,23 @@ class FixDelegate(QtGui.QStyledItemDelegate):
 #        self.index.model().sound(self.index).cat = widget.currentIndex()
 
 
-class ParamFixDialog(QtGui.QDialog):
+class ParamFixDialog(QtWidgets.QDialog):
     def __init__(self, sound_list, invalid, parent=None):
-        QtGui.QDialog.__init__(self, parent)
+        QtWidgets.QDialog.__init__(self, parent)
         self.sound_list = sound_list
         self.edited = {sound:[] for sound in sound_list}
         self.invalid = invalid
-        layout = QtGui.QGridLayout()
+        layout = QtWidgets.QGridLayout()
         self.setLayout(layout)
         self.setWindowTitle('Invalid sound parameters detected')
-        icon = self.style().standardIcon(QtGui.QStyle.SP_MessageBoxWarning)
-        icon_label = QtGui.QLabel()
-        icon_label.setSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Preferred)
+        icon = self.style().standardIcon(QtWidgets.QStyle.SP_MessageBoxWarning)
+        icon_label = QtWidgets.QLabel()
+        icon_label.setSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Preferred)
         icon_label.setPixmap(QtGui.QPixmap(icon.pixmap(32, 32)))
         layout.addWidget(icon_label, 0, 0)
-        layout.addWidget(QtGui.QLabel('The following sounds contain invalid data, how do you want to proceed?'), 0, 1, 1, 2)
-        self.table = QtGui.QTreeView()
-        self.table.header().setResizeMode(QtGui.QHeaderView.ResizeToContents)
+        layout.addWidget(QtWidgets.QLabel('The following sounds contain invalid data, how do you want to proceed?'), 0, 1, 1, 2)
+        self.table = QtWidgets.QTreeView()
+        self.table.header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
         self.model = QtGui.QStandardItemModel()
         self.model.setHorizontalHeaderLabels(['Sound parameter', 'Value', 'Allowed range', 'Fix value'])
         self.model.itemChanged.connect(self.highlight)
@@ -74,7 +74,7 @@ class ParamFixDialog(QtGui.QDialog):
                     value_item = NoEditItem(str(getattr(sound, param.attr)))
                     range_item = NoEditItem('{} - {}'.format(*param.range[:2]))
                     edited_item = QtGui.QStandardItem('Unchanged')
-                    edited_item.setData(['{} - {}'.format(i, v) for i, v in zip(xrange(param.range[0], param.range[1] + 1), param.values)], ValuesRole)
+                    edited_item.setData(['{} - {}'.format(i, v) for i, v in zip(range(param.range[0], param.range[1] + 1), param.values)], ValuesRole)
                     edited_item.setData(-1, EditedRole)
                     self.edited[sound].append((param, edited_item))
                     sound_item.setChild(child, param_item)
@@ -90,7 +90,7 @@ class ParamFixDialog(QtGui.QDialog):
                         value_item = NoEditItem(str(value))
                         range_item = NoEditItem('0 - {}'.format(len(values) - 1))
                         edited_item = QtGui.QStandardItem('Unchanged')
-                        edited_item.setData(['{} - {}'.format(i, v) for i, v in zip(xrange(len(values)), values)], ValuesRole)
+                        edited_item.setData(['{} - {}'.format(i, v) for i, v in zip(range(len(values)), values)], ValuesRole)
                         edited_item.setData(-1, EditedRole)
                         self.edited[sound].append((param, short, edited_item))
                         main_item.setChild(sub_id, param_item)
@@ -98,18 +98,18 @@ class ParamFixDialog(QtGui.QDialog):
                         main_item.setChild(sub_id, 2, range_item)
                         main_item.setChild(sub_id, 3, edited_item)
         self.table.expandAll()
-        unchanged_btn = QtGui.QPushButton('Leave all values unchanged')
+        unchanged_btn = QtWidgets.QPushButton('Leave all values unchanged')
         unchanged_btn.clicked.connect(lambda: self.set_all_values(_UNCHANGED))
         layout.addWidget(unchanged_btn, 2, 0)
-        min_btn = QtGui.QPushButton('Set all values to minimum')
+        min_btn = QtWidgets.QPushButton('Set all values to minimum')
         min_btn.clicked.connect(lambda: self.set_all_values(_MINIMUM))
         layout.addWidget(min_btn, 2, 1)
-        max_btn = QtGui.QPushButton('Set all values to maximum')
+        max_btn = QtWidgets.QPushButton('Set all values to maximum')
         max_btn.clicked.connect(lambda: self.set_all_values(_MAXIMUM))
         layout.addWidget(max_btn, 2, 2)
 
-        buttonBox = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Apply)
-        proceed_btn = buttonBox.button(QtGui.QDialogButtonBox.Apply)
+        buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Apply)
+        proceed_btn = buttonBox.button(QtWidgets.QDialogButtonBox.Apply)
         proceed_btn.setText('Proceed')
         proceed_btn.clicked.connect(self.apply)
         layout.addWidget(buttonBox, 3, 0, 1, 3)
@@ -121,24 +121,24 @@ class ParamFixDialog(QtGui.QDialog):
                 item.setText('Unchanged')
             elif mode == _MINIMUM:
                 item.setData(0, EditedRole)
-                item.setText(item.data(ValuesRole).toPyObject()[0])
+                item.setText(item.data(ValuesRole)[0])
             else:
-                values = item.data(ValuesRole).toPyObject()
+                values = item.data(ValuesRole)
                 item.setData(len(values) - 1, EditedRole)
                 item.setText(values[-1])
 
-        for row in xrange(self.model.rowCount()):
+        for row in range(self.model.rowCount()):
             parent = self.model.item(row, 0)
-            for child_row in xrange(parent.rowCount()):
+            for child_row in range(parent.rowCount()):
                 child = parent.child(child_row, 0)
                 if child.hasChildren():
-                    for sub_row in xrange(child.rowCount()):
+                    for sub_row in range(child.rowCount()):
                         _set_data(child.child(sub_row, 3))
                 else:
                     _set_data(parent.child(child_row, 3))
 
     def highlight(self, item):
-        setBold(item, True if item.data(EditedRole).toPyObject() >= 0 else False)
+        setBold(item, True if item.data(EditedRole) >= 0 else False)
 
     def apply(self):
         if not self.ignore_confirm():
@@ -147,7 +147,7 @@ class ParamFixDialog(QtGui.QDialog):
             if not edited: continue
             for data in edited:
                 param = data[0]
-                value = data[-1].data(EditedRole).toPyObject()
+                value = data[-1].data(EditedRole)
                 if value < 0: continue
                 if len(data) == 2:
                     setattr(sound, param.attr, value)
@@ -161,13 +161,13 @@ class ParamFixDialog(QtGui.QDialog):
         self.accept()
 
     def ignore_confirm(self):
-        if any(True for params in self.edited.values() for field in params if (field and field[-1].data(EditedRole).toPyObject() < 0)):
-            res = QtGui.QMessageBox.question(
+        if any(True for params in self.edited.values() for field in params if (field and field[-1].data(EditedRole) < 0)):
+            res = QtWidgets.QMessageBox.question(
                                              self, 'Invalid data', 
                                              'Some invalid data is still present in the library, do you want to proceed?', 
-                                             QtGui.QMessageBox.Yes|QtGui.QMessageBox.No
+                                             QtWidgets.QMessageBox.Yes|QtWidgets.QMessageBox.No
                                              )
-            if res != QtGui.QMessageBox.Yes:
+            if res != QtWidgets.QMessageBox.Yes:
                 return False
         return True
 
@@ -176,24 +176,24 @@ class ParamFixDialog(QtGui.QDialog):
             self.reject()
 
     def exec_(self):
-        res = QtGui.QDialog.exec_(self)
+        res = QtWidgets.QDialog.exec_(self)
         if not res:
             return
         return self.sound_list
 
 
-class GrowingFileLabel(QtGui.QLabel):
-    dots = QtCore.QString.fromUtf8('…')
+class GrowingFileLabel(QtWidgets.QLabel):
+    dots = ('…')
 
     def __init__(self, *args, **kwargs):
-        QtGui.QLabel.__init__(self, *args, **kwargs)
+        QtWidgets.QLabel.__init__(self, *args, **kwargs)
         self.font_metrics = QtGui.QFontMetrics(self.font())
         self.full_text = ''
 
     def ellipse_text(self):
         text = self.full_text
         if self.font_metrics.width(text) <= self.width():
-            QtGui.QLabel.setText(self, text)
+            QtWidgets.QLabel.setText(self, text)
             return
         split = text.split('/')
         file = '/'+split[-1]
@@ -205,10 +205,10 @@ class GrowingFileLabel(QtGui.QLabel):
             cutter += 1
             if cutter == path_len:
                 break
-        QtGui.QLabel.setText(self, text)
+        QtWidgets.QLabel.setText(self, text)
 
     def setText(self, text):
-        if text.startsWith(str(QtCore.QDir.homePath())):
+        if text.startswith(str(QtCore.QDir.homePath())):
             text = text.replace(QtCore.QDir.homePath(), '~')
         self.full_text = text
         self.ellipse_text()
@@ -217,7 +217,7 @@ class GrowingFileLabel(QtGui.QLabel):
         self.ellipse_text()
 
 
-class SmallCheck(QtGui.QCheckBox):
+class SmallCheck(QtWidgets.QCheckBox):
     square_pen = QtGui.QColor(QtCore.Qt.darkGray)
     select_pen = QtGui.QColor(QtCore.Qt.black)
     select_brush = QtGui.QColor(QtCore.Qt.black)
@@ -227,8 +227,8 @@ class SmallCheck(QtGui.QCheckBox):
     path.lineTo(8, 2)
     path.lineTo(4, 6)
     def __init__(self, *args, **kwargs):
-        QtGui.QCheckBox.__init__(self, *args, **kwargs)
-        self.setSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Minimum)
+        QtWidgets.QCheckBox.__init__(self, *args, **kwargs)
+        self.setSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Minimum)
         self.square = QtCore.QRectF()
         self.setChecked(True)
 
@@ -252,27 +252,27 @@ class SmallCheck(QtGui.QCheckBox):
     def resizeEvent(self, event):
         self.square = QtCore.QRectF(self.width()/2.-5, self.height()/2.-5, 10, 10)
 
-class MidiImportDialog(QtGui.QDialog):
+class MidiImportDialog(QtWidgets.QDialog):
     dump_send = QtCore.pyqtSignal(object)
     sound_headers = [''] + [sound_headers[i] for i, n in enumerate(sound_headers) if i in (BANK, PROG, NAME, CATEGORY)]
 
     def __init__(self, main, parent):
-        QtGui.QDialog.__init__(self, parent)
+        QtWidgets.QDialog.__init__(self, parent)
         load_ui(self, 'dialogs/midi_import.ui')
         self.main = main
 
-        self.import_btn = QtGui.QPushButton('Import to library')
-        self.import_btn.setIcon(self.style().standardIcon(QtGui.QStyle.SP_DialogSaveButton))
-        self.buttonBox.addButton(self.import_btn, QtGui.QDialogButtonBox.ActionRole)
+        self.import_btn = QtWidgets.QPushButton('Import to library')
+        self.import_btn.setIcon(self.style().standardIcon(QtWidgets.QStyle.SP_DialogSaveButton))
+        self.buttonBox.addButton(self.import_btn, QtWidgets.QDialogButtonBox.ActionRole)
         self.import_btn.clicked.connect(self.import_sounds)
 
         self.export_state = False
         self.midi_state = False
 
-        self.dump_btn = QtGui.QPushButton('Dump all')
+        self.dump_btn = QtWidgets.QPushButton('Dump all')
         self.dump_btn.setEnabled(False)
-        self.dump_btn.setIcon(self.style().standardIcon(QtGui.QStyle.SP_ArrowRight))
-        self.buttonBox.addButton(self.dump_btn, QtGui.QDialogButtonBox.ActionRole)
+        self.dump_btn.setIcon(self.style().standardIcon(QtWidgets.QStyle.SP_ArrowRight))
+        self.buttonBox.addButton(self.dump_btn, QtWidgets.QDialogButtonBox.ActionRole)
         self.dump_btn.clicked.connect(self.dump_sounds)
 
         self.splitter.setCollapsible(1, True)
@@ -283,13 +283,13 @@ class MidiImportDialog(QtGui.QDialog):
         self.model = self.sounds_table.model()
         self.sounds_table.setColumnCount(len(self.sound_headers))
         self.sounds_table.setHorizontalHeaderLabels(self.sound_headers)
-        self.sounds_table.horizontalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
-        self.sounds_table.horizontalHeader().setResizeMode(3, QtGui.QHeaderView.Stretch)
+        self.sounds_table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+        self.sounds_table.horizontalHeader().setSectionResizeMode(3, QtWidgets.QHeaderView.Stretch)
         self.sounds_table.verticalHeader().setVisible(False)
         self.sounds_table.horizontalHeader().setVisible(True)
-        self.sounds_table.verticalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
+        self.sounds_table.verticalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
         self.bankmap_combo.addItems([uppercase[b] for b in range(8)])
-        self.bankmap_btn.setIcon(self.style().standardIcon(QtGui.QStyle.SP_DialogApplyButton))
+        self.bankmap_btn.setIcon(self.style().standardIcon(QtWidgets.QStyle.SP_DialogApplyButton))
 
         self.destination_group.setId(self.sound_buffer_radio, 0)
         self.destination_group.setId(self.multi_buffer_radio, 1)
@@ -298,8 +298,8 @@ class MidiImportDialog(QtGui.QDialog):
         self.name_edit.setValidator(QtGui.QRegExpValidator(QtCore.QRegExp('[\x20-\x7f°]*')))
         self.cat_combo.addItems(categories)
         self.bank_combo.addItems([uppercase[b] for b in range(8)])
-        self.single_dump_btn.setIcon(self.style().standardIcon(QtGui.QStyle.SP_ArrowRight))
-        self.apply_btn.setIcon(self.style().standardIcon(QtGui.QStyle.SP_DialogApplyButton))
+        self.single_dump_btn.setIcon(self.style().standardIcon(QtWidgets.QStyle.SP_ArrowRight))
+        self.apply_btn.setIcon(self.style().standardIcon(QtWidgets.QStyle.SP_DialogApplyButton))
 
         self.file_open_btn.clicked.connect(self.file_open)
         self.sounds_table.currentChanged = self.currentChanged
@@ -316,7 +316,7 @@ class MidiImportDialog(QtGui.QDialog):
         self.apply_btn.clicked.connect(self.sound_update)
 
     def currentChanged(self, index, prev):
-        QtGui.QTableWidget.currentChanged(self.sounds_table, index, prev)
+        QtWidgets.QTableWidget.currentChanged(self.sounds_table, index, prev)
         sound = self.sound_list[index.row()]
         self.summary_widget.setSoundData(sound.data)
         self.name_edit.setText(sound.name)
@@ -326,7 +326,7 @@ class MidiImportDialog(QtGui.QDialog):
         self.apply_btn.setEnabled(False)
 
     def selectionChanged(self, selected, deselected):
-        QtGui.QTableWidget.selectionChanged(self.sounds_table, selected, deselected)
+        QtWidgets.QTableWidget.selectionChanged(self.sounds_table, selected, deselected)
         selection = set([index.row() for index in self.sounds_table.selectionModel().selectedIndexes()])
         self.sound_groupbox.setEnabled(True if len(selection) == 1 else False)
 
@@ -344,12 +344,12 @@ class MidiImportDialog(QtGui.QDialog):
 
     def import_sounds(self):
         export_len = len([i for i in self.export_list if i])
-        res = QtGui.QMessageBox.question(
+        res = QtWidgets.QMessageBox.question(
                                          self, 'Import to library',
                                          'You are about to overwrite {} sound{} to the local library, do you want to proceed?'.format(export_len, 's' if export_len>1 else ''), 
-                                         QtGui.QMessageBox.Yes|QtGui.QMessageBox.No
+                                         QtWidgets.QMessageBox.Yes|QtWidgets.QMessageBox.No
                                          )
-        if res != QtGui.QMessageBox.Yes: return
+        if res != QtWidgets.QMessageBox.Yes: return
         sound_list = []
         for i, state in enumerate(self.export_list):
             if state:
@@ -361,12 +361,12 @@ class MidiImportDialog(QtGui.QDialog):
 
     def dump_sounds(self):
         export_len = len([i for i in self.export_list if i])
-        res = QtGui.QMessageBox.question(
+        res = QtWidgets.QMessageBox.question(
                                          self, 'Dump to Blofeld',
                                          'You are about to dump {} sound{} to the Blofeld, do you want to proceed?'.format(export_len, 's' if export_len>1 else ''), 
-                                         QtGui.QMessageBox.Yes|QtGui.QMessageBox.No
+                                         QtWidgets.QMessageBox.Yes|QtWidgets.QMessageBox.No
                                          )
-        if res != QtGui.QMessageBox.Yes: return
+        if res != QtWidgets.QMessageBox.Yes: return
         sound_list = []
         for i, state in enumerate(self.export_list):
             if state:
@@ -398,11 +398,11 @@ class MidiImportDialog(QtGui.QDialog):
         else:
             bank = self.bank_combo.currentIndex()
             prog = self.prog_spin.value() - 1
-            res = QtGui.QMessageBox.question(self, 'Dump selected sound',
+            res = QtWidgets.QMessageBox.question(self, 'Dump selected sound',
                                              'You are going to send a sound dump to the Blofeld at location "{}{:03}".\nThis action cannot be undone. Do you want to proceed?'.format(uppercase[bank], prog+1), 
-                                             QtGui.QMessageBox.Ok|QtGui.QMessageBox.Cancel
+                                             QtWidgets.QMessageBox.Ok|QtWidgets.QMessageBox.Cancel
                                              )
-            if not res == QtGui.QMessageBox.Ok: return
+            if not res == QtWidgets.QMessageBox.Ok: return
         row = self.sounds_table.selectedIndexes()[0].row()
         copy = self.sound_list[row].copy()
         copy.bank = bank
@@ -416,7 +416,7 @@ class MidiImportDialog(QtGui.QDialog):
 
     def sound_update(self):
         sound = self.sound_list[self.sounds_table.currentRow()]
-        sound.name = str(self.name_edit.text().toUtf8()).ljust(16, ' ')
+        sound.name = str(self.name_edit.text()).ljust(16, ' ')
         self.name_edit.setText(sound.name)
         sound.cat = self.cat_combo.currentIndex()
         self.summary_widget.setSoundData(sound.data)
@@ -437,19 +437,19 @@ class MidiImportDialog(QtGui.QDialog):
         state = self.dump_btn.isEnabled()
         row = self.sounds_table.indexAt(pos).row()
         self.sounds_table.selectRow(row)
-        menu = QtGui.QMenu()
+        menu = QtWidgets.QMenu()
         menu.setSeparatorsCollapsible(False)
-        header = QtGui.QAction('Dump to...', menu)
-        header.setIcon(self.style().standardIcon(QtGui.QStyle.SP_ArrowRight))
+        header = QtWidgets.QAction('Dump to...', menu)
+        header.setIcon(self.style().standardIcon(QtWidgets.QStyle.SP_ArrowRight))
         header.setSeparator(True)
-        buffer_item = QtGui.QAction('Sound Edit Buffer', menu)
+        buffer_item = QtWidgets.QAction('Sound Edit Buffer', menu)
         buffer_item.setEnabled(state)
         menu.addActions([header, buffer_item])
-        multi_menu = QtGui.QMenu('Multi Instrument Edit Buffer')
+        multi_menu = QtWidgets.QMenu('Multi Instrument Edit Buffer')
         multi_menu.setEnabled(state)
         menu.addMenu(multi_menu)
         for m in range(16):
-            multi_item = QtGui.QAction('Part {}'.format(m+1), multi_menu)
+            multi_item = QtWidgets.QAction('Part {}'.format(m+1), multi_menu)
             multi_item.setData(m)
             multi_menu.addAction(multi_item)
         res = menu.exec_(self.sounds_table.mapToGlobal(pos))
@@ -459,7 +459,7 @@ class MidiImportDialog(QtGui.QDialog):
         if res == buffer_item:
             copy.prog = 0
         else:
-            copy.prog = res.data().toPyObject()
+            copy.prog = res.data()
         self.dump_send.emit(copy)
 
     def export_set(self, index, state):
@@ -470,23 +470,23 @@ class MidiImportDialog(QtGui.QDialog):
 
     def file_open(self):
         while True:
-            path = QtGui.QFileDialog.getOpenFileName(self, 'Open MIDI sound set', QtGui.QDesktopServices.storageLocation(QtGui.QDesktopServices.HomeLocation), 'MIDI files (*.mid);;All files (*)')
+            path = QtWidgets.QFileDialog.getOpenFileName(self, 'Open MIDI sound set', QtCore.QStandardPaths.writableLocation(QtCore.QStandardPaths.HomeLocation), 'MIDI files (*.mid);;All files (*)')
             if not path: return
             if not file_exists(str(path)):
-                QtGui.QMessageBox.warning(self, 'File does not exists', 'The selected does not exist.\nCheck the file name and path.')
+                QtWidgets.QMessageBox.warning(self, 'File does not exists', 'The selected does not exist.\nCheck the file name and path.')
             else:
                 try:
                     res = self.midi_load(path)
                     if not res:
-                        retry = QtGui.QMessageBox.information(
+                        retry = QtWidgets.QMessageBox.information(
                                                       self, 'No sounds found', 
                                                       'It looks like the selected file does not contain any sound.\nTry with another file?', 
-                                                      QtGui.QMessageBox.Yes|QtGui.QMessageBox.No
+                                                      QtWidgets.QMessageBox.Yes|QtWidgets.QMessageBox.No
                                                       )
-                        if retry != QtGui.QMessageBox.Yes: return
+                        if retry != QtWidgets.QMessageBox.Yes: return
                     break
                 except:
-                    QtGui.QMessageBox.warning(self, 'Unexpected error', 'Something is wrong with the selected file...\nTry with another one.')
+                    QtWidgets.QMessageBox.warning(self, 'Unexpected error', 'Something is wrong with the selected file...\nTry with another one.')
         self.setSource(res, path)
 
     def setSource(self, res, path):
@@ -498,8 +498,8 @@ class MidiImportDialog(QtGui.QDialog):
         self.sounds_table.selectRow(0)
 
     def midi_load(self, path):
-        if isinstance(path, QtCore.QString):
-            path = str(path.toUtf8())
+        if isinstance(path, str):
+            path = str(path)
         sound_list = []
         try:
             pattern = midifile.read_midifile(path)
@@ -533,11 +533,11 @@ class MidiImportDialog(QtGui.QDialog):
             check.toggled.connect(lambda state, index=row: self.export_set(index, state))
             self.export_list.append(True)
             self.sounds_table.setCellWidget(row, 0, check)
-            bank_item = QtGui.QTableWidgetItem(uppercase[sound.bank] if sound.bank < len(uppercase) else uppercase[-1])
+            bank_item = QtWidgets.QTableWidgetItem(uppercase[sound.bank] if sound.bank < len(uppercase) else uppercase[-1])
             bank_item.setTextAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignVCenter)
-            prog_item = QtGui.QTableWidgetItem('{:03}'.format(sound.prog+1))
-            name_item = QtGui.QTableWidgetItem(QtCore.QString.fromUtf8(sound.name))
-            cat_item = QtGui.QTableWidgetItem(categories[sound.cat] if sound.cat < len(categories) else categories[-1])
+            prog_item = QtWidgets.QTableWidgetItem('{:03}'.format(sound.prog+1))
+            name_item = QtWidgets.QTableWidgetItem((sound.name))
+            cat_item = QtWidgets.QTableWidgetItem(categories[sound.cat] if sound.cat < len(categories) else categories[-1])
             self.sounds_table.setItem(row, 1, bank_item)
             self.sounds_table.setItem(row, 2, prog_item)
             self.sounds_table.setItem(row, 3, name_item)

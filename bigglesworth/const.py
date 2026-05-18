@@ -1,10 +1,10 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 # *-* coding: utf-8 *-*
 
 import pickle
 from os import path
 from collections import namedtuple
-from PyQt4 import QtCore
+from PyQt5 import QtCore
 from bigglesworth import version
 
 def local_path(name):
@@ -153,8 +153,8 @@ class AdvParam(object):
         try:
             return self.get(data)
         except Exception as e:
-            print e
-            print 'Parameters malformed (format: {}): {} ({:08b})'.format(self.fmt, data, data)
+            print(e)
+            print('Parameters malformed (format: {}): {} ({:08b})'.format(self.fmt, data, data))
 
 arp_step_types = [
                   'normal', 
@@ -213,7 +213,7 @@ class ParamsClass(object):
     with open(local_path('blofeld_params'), 'rb') as bp:
         param_list = []
         param_names = {}
-        for i, (r, v, n, s, f, a) in enumerate(pickle.load(bp)):
+        for i, (r, v, n, s, f, a) in enumerate(pickle.load(bp, encoding='latin1')):
             if i == 58:
                 v = AdvParam('0uuu000a', u=('Unisono', ['off', 'dual', '3', '4', '5', '6']), a=('Allocation', ['Poly','Mono']))
             elif i in [196, 208, 220, 232]:
@@ -341,7 +341,7 @@ note_keys = [
              '+', 
              ]
 
-note_keys = [QtCore.QString().fromUtf8(key) for key in note_keys]
+note_keys = [(key) for key in note_keys]
 
 init_sound_data = [0, 0, 
                    1, 64, 64, 64, 66, 96, 0, 0, 2, 127, 1, 64, 0, 0, 0, 0, 0, 64, 64, 64, 66, 

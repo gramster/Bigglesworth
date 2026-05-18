@@ -1,9 +1,9 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 # *-* coding: utf-8 *-*
 
 import struct
 from threading import Lock
-from const import *
+from bigglesworth.const import *
 try:
     from pyalsa import alsaseq
     ALSA = True
@@ -14,7 +14,7 @@ try:
 except:
     pass
 from time import *
-from PyQt4 import QtCore
+from PyQt5 import QtCore
 
 
 class Const(object):
@@ -746,18 +746,18 @@ class Connection(QtCore.QObject):
 #            return 'Connection {}:{} ({}:{}) > {}:{} ({}:{})'.format(self.src.client.name, self.src.name, self.src.client.id, self.src.id,
 #                                                                     self.dest.client.name, self.dest.name, self.dest.client.id, self.dest.id)
         except Exception as err:
-            print err
+            print(err)
             if (self.graph.backend == ALSA and isinstance(err, alsaseq.SequencerError)) or isinstance(err, rtmidi.RtMidiError):
                 self.lostEvent()
                 self.graph.conn_deleted(self)
                 return '(destroyed) Conn ({}:{}) > ({}:{})'.format(self.src.client.id, self.src.id, self.dest.client.id, self.dest.id)
-            print 'Connection error: {}'.format(err)
+            print('Connection error: {}'.format(err))
 
     def delete(self):
         try:
             self.seq.disconnect_ports(self.src.addr, self.dest.addr)
         except alsaseq.SequencerError:
-            print 'Disconnect not successful'
+            print('Disconnect not successful')
 
 class Port(QtCore.QObject):
     connection = QtCore.pyqtSignal(object, object)
@@ -836,12 +836,12 @@ class Port(QtCore.QObject):
                 self.seq.disconnect_ports(self.addr, dest.addr)
                 return
             except alsaseq.SequencerError:
-                print 'Disconnection {} > {} not permitted'.format(self.exp, dest.exp)
+                print('Disconnection {} > {} not permitted'.format(self.exp, dest.exp))
                 return
         try:
             self.seq.disconnect_ports(dest.addr, self.addr)
         except alsaseq.SequencerError:
-            print 'Disconnection {} > {} not permitted'.format(dest.exp, self.exp)
+            print('Disconnection {} > {} not permitted'.format(dest.exp, self.exp))
             return
 
     def disconnect_all(self, dir=None, skip_hidden=True):
@@ -852,7 +852,7 @@ class Port(QtCore.QObject):
                 try:
                     self.seq.disconnect_ports(conn.src.addr, conn.dest.addr)
                 except alsaseq.SequencerError:
-                    print 'Disconnection {} > {} not permitted'.format(conn.src.exp, conn.dest.exp)
+                    print('Disconnection {} > {} not permitted'.format(conn.src.exp, conn.dest.exp))
         else:
             if not self.is_duplex and ((dir == OUTPUT and not self.is_output) or (dir == INPUT and not self.is_input)):
                 return
@@ -863,7 +863,7 @@ class Port(QtCore.QObject):
                     try:
                         self.seq.disconnect_ports(conn.src.addr, conn.dest.addr)
                     except alsaseq.SequencerError:
-                        print 'Disconnection {} > {} not permitted'.format(conn.src.exp, conn.dest.exp)
+                        print('Disconnection {} > {} not permitted'.format(conn.src.exp, conn.dest.exp))
             else:
                 for conn in self.connections.input:
                     if skip_hidden and conn.hidden:
@@ -871,7 +871,7 @@ class Port(QtCore.QObject):
                     try:
                         self.seq.disconnect_ports(conn.src.addr, conn.dest.addr)
                     except alsaseq.SequencerError:
-                        print 'Disconnection {} > {} not permitted'.format(conn.src.exp, conn.dest.exp)
+                        print('Disconnection {} > {} not permitted'.format(conn.src.exp, conn.dest.exp))
 
     @property
     def type_str(self):
@@ -1014,7 +1014,7 @@ class Graph(QtCore.QObject):
         except KeyError:
             return None
         except Exception as err:
-            print 'Unknown exception ({}): {}'.format(type(err), err)
+            print('Unknown exception ({}): {}'.format(type(err), err))
             return None
 
 
@@ -1097,7 +1097,7 @@ class Graph(QtCore.QObject):
                     conn_port = conn.dest if conn.dest!= port else conn.src
                     output += '\t\t{} (type: {}, caps: {})\n'.format(conn_port, conn_port.type, conn_port.caps)
             if len(output):
-                print c_str+output
+                print(c_str+output)
 
     def graph_simple(self, input=None, output=None, hidden=False):
         c_output = []
@@ -1135,7 +1135,7 @@ class Graph(QtCore.QObject):
                 if len(client) > 1:
                     s += '\n'.join(client)
                     s += '\n'
-        print s
+        print(s)
 
     @property
     def client_name_dict(self):

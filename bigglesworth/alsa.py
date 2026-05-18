@@ -1,8 +1,8 @@
-from PyQt4 import QtCore
+from PyQt5 import QtCore
 from pyalsa import alsaseq
 
-from const import ALSA
-from midiutils import *
+from bigglesworth.const import ALSA
+from bigglesworth.midiutils import *
 
 
 class MidiDevice(QtCore.QObject):
@@ -75,17 +75,17 @@ class MidiDevice(QtCore.QObject):
                             self.midi_event.emit(newev)
 #                            print newev
                         except Exception as e:
-                            print 'event {} unrecognized'.format(event)
-                            print e
+                            print('event {} unrecognized'.format(event))
+                            print(e)
                     elif event.type in [alsaseq.SEQ_EVENT_CLOCK, alsaseq.SEQ_EVENT_SENSING]:
                         pass
                     elif event.type == alsaseq.SEQ_EVENT_SYSEX:
                         self.check(event)
             except Exception as e:
-                print e
-                print 'something is wrong'
+                print(e)
+                print('something is wrong')
 #        print 'stopped'
-        print 'exit'
+        print('exit')
         del self.seq
         self.stopped.emit()
 
@@ -105,5 +105,5 @@ class MidiDevice(QtCore.QObject):
                 self.midi_event.emit(sysex)
                 self.buffer = []
         except Exception as Err:
-            print len(self.buffer)
-            print Err
+            print(len(self.buffer))
+            print(Err)

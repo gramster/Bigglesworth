@@ -129,7 +129,7 @@ if sys.version_info[0] <= 2:
         bytes
     except NameError:
         bytes = str
-    base_string_type = basestring
+    base_string_type = str
 elif sys.version_info[0] >= 3:
     py3 = True
     unicode = str
@@ -300,7 +300,7 @@ class Markdown(object):
 
         if not isinstance(text, unicode):
             # TODO: perhaps shouldn't presume UTF-8 for string input?
-            text = unicode(text, 'utf-8')
+            text = str(text, 'utf-8')
 
         if self.use_file_vars:
             # Look for emacs-style file variable hints.

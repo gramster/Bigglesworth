@@ -3,36 +3,36 @@ def read_varlen(data):
     NEXTBYTE = 1
     value = 0
     while NEXTBYTE:
-        chr = ord(data.next())
+        byte = next(data)  # bytes iterator yields ints directly in Python 3
         # is the hi-bit set?
-        if not (chr & 0x80):
+        if not (byte & 0x80):
             # no next BYTE
             NEXTBYTE = 0
         # mask out the 8th bit
-        chr = chr & 0x7f
+        byte = byte & 0x7f
         # shift last value up 7 bits
         value = value << 7
         # add new value
-        value += chr
+        value += byte
     return value
 
 def write_varlen(value):
-    chr1 = chr(value & 0x7F)
+    b1 = bytes([value & 0x7F])
     value >>= 7
     if value:
-        chr2 = chr((value & 0x7F) | 0x80)
+        b2 = bytes([(value & 0x7F) | 0x80])
         value >>= 7
         if value:
-            chr3 = chr((value & 0x7F) | 0x80)
+            b3 = bytes([(value & 0x7F) | 0x80])
             value >>= 7
             if value:
-                chr4 = chr((value & 0x7F) | 0x80)
-                res = chr4 + chr3 + chr2 + chr1
+                b4 = bytes([(value & 0x7F) | 0x80])
+                res = b4 + b3 + b2 + b1
             else:
-                res = chr3 + chr2 + chr1
+                res = b3 + b2 + b1
         else:
-            res = chr2 + chr1
+            res = b2 + b1
     else:
-        res = chr1
+        res = b1
     return res
 

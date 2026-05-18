@@ -1,11 +1,11 @@
 # *-* coding: utf-8 *-*
 
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 from bigglesworth.utils import load_ui
 
-class LoaderWidget(QtGui.QWidget):
+class LoaderWidget(QtWidgets.QWidget):
     def __init__(self):
-        QtGui.QWidget.__init__(self)
+        QtWidgets.QWidget.__init__(self)
         size = 24
         self.setFixedSize(size, size)
         self.pen_width = 5
@@ -46,25 +46,25 @@ class LoaderWidget(QtGui.QWidget):
         qp.end()
 
 
-class VersionRequestDialog(QtGui.QDialog):
+class VersionRequestDialog(QtWidgets.QDialog):
     def __init__(self, parent):
-        QtGui.QDialog.__init__(self, parent)
+        QtWidgets.QDialog.__init__(self, parent)
         loader = LoaderWidget()
-        layout = QtGui.QGridLayout()
+        layout = QtWidgets.QGridLayout()
         layout.setSpacing(10)
         self.setLayout(layout)
-        label = QtGui.QLabel('Checking for updates, please wait...')
+        label = QtWidgets.QLabel('Checking for updates, please wait...')
         label.setAlignment(QtCore.Qt.AlignHCenter)
         layout.addWidget(label)
         layout.addWidget(loader, 1, 0, alignment=QtCore.Qt.AlignHCenter)
-        buttonBox = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Cancel)
+        buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Cancel)
         buttonBox.setCenterButtons(True)
         layout.addWidget(buttonBox)
 
 
-class UpdatedDialog(QtGui.QDialog):
+class UpdatedDialog(QtWidgets.QDialog):
     def __init__(self, main, parent):
-        QtGui.QDialog.__init__(self, parent)
+        QtWidgets.QDialog.__init__(self, parent)
         load_ui(self, 'dialogs/update_info.ui')
         self.main = main
         self.info_text.document().setIndentWidth(20)
@@ -87,6 +87,6 @@ class UpdatedDialog(QtGui.QDialog):
         self.info_text.moveCursor(self.info_text.textCursor().End)
         self.info_text.insertHtml(content)
         self.info_text.scrollToAnchor('top')
-        QtGui.QDialog.exec_(self)
+        QtWidgets.QDialog.exec_(self)
 
 

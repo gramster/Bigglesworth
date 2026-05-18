@@ -1,2 +1,2 @@
-pyalsa==1.0.26
-PyQt4==4.11.4
+PyQt5>=5.15
+python-rtmidi>=1.4

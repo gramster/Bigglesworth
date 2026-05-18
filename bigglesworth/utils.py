@@ -1,9 +1,9 @@
 from os import path
-from PyQt4 import QtCore, uic
+from PyQt5 import QtCore, QtWidgets, uic
 from bigglesworth.const import status_dict, cursor_list
 
 def get_next_cycle(cycle_obj):
-    return cycle_obj.next()
+    return next(cycle_obj)
 
 def load_ui(widget, ui_path):
     #fix for cx_freeze

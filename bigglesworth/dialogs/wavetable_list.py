@@ -1,20 +1,20 @@
 # *-* coding: utf-8 *-*
 
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 from bigglesworth.utils import load_ui
 from bigglesworth.dialogs import SYXFILE
 
-class WavetableListWindow(QtGui.QDialog):
+class WavetableListWindow(QtWidgets.QDialog):
     def __init__(self, main):
-        QtGui.QDialog.__init__(self)
+        QtWidgets.QDialog.__init__(self)
         load_ui(self, 'dialogs/wavetable_list.ui')
         self.main = main
         self.wavetable_library = self.main.wavetable_library
         self.wavetable_model = self.wavetable_library.model
         self.wavetable_view.setModel(self.wavetable_model)
-        self.wavetable_view.verticalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
-        self.wavetable_view.horizontalHeader().setResizeMode(1, QtGui.QHeaderView.ResizeToContents)
-        self.wavetable_view.horizontalHeader().setResizeMode(2, QtGui.QHeaderView.ResizeToContents)
+        self.wavetable_view.verticalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+        self.wavetable_view.horizontalHeader().setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
+        self.wavetable_view.horizontalHeader().setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeToContents)
 
         self.new_btn.setIcon(QtGui.QIcon.fromTheme('document-new'))
         self.import_btn.setIcon(QtGui.QIcon.fromTheme('document-open'))
@@ -70,11 +70,11 @@ class WavetableListWindow(QtGui.QDialog):
         uid = self.wavetable_model.item(row, 4).text()
         for window in self.main.wavetable_windows_list:
             if window.wavetable_uid == uid:
-                QtGui.QMessageBox.critical(self, 'Wavetable is open', 'The selected wavetable is currently open.\nClose its window to allow deletion.')
+                QtWidgets.QMessageBox.critical(self, 'Wavetable is open', 'The selected wavetable is currently open.\nClose its window to allow deletion.')
                 return
         name = self.wavetable_model.item(row, 0).text()
-        res = QtGui.QMessageBox.question(self, 'Delete wavetable', 'Do you want to delete wavetable "{}"?'.format(name), QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)
-        if res == QtGui.QMessageBox.Yes:
+        res = QtWidgets.QMessageBox.question(self, 'Delete wavetable', 'Do you want to delete wavetable "{}"?'.format(name), QtWidgets.QMessageBox.Yes|QtWidgets.QMessageBox.No)
+        if res == QtWidgets.QMessageBox.Yes:
             self.wavetable_library.delete(uid)
 
 
